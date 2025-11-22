@@ -58,7 +58,11 @@ sub _ _ (Bound j) | otherwise = Bound j
 sub _ _ (Free n   )           = Free n
 sub i t (u   :@: v)           = sub i t u :@: sub i t v
 sub i t (Lam t'  u)           = Lam t' (sub (i + 1) t u)
-sub i t (Let t1 t2)           = Let (sub (i+1) t t1) (sub (i+1) t t2) -- Let t1 (sub (i+1) t t2)
+-- sub i t (Let t1 t2)           = Let (sub (i+1) t t1) (sub (i+1) t t2) -- Let t1 (sub (i+1) t t2)
+-- In a let-expression "Let t1 t2" the binder introduced by the let
+-- only scopes over t2. So when substituting we must NOT increment the
+-- index for t1, but DO increment when descending into t2.
+sub i t (Let t1 t2)           = Let (sub i t t1) (sub (i+1) t t2)
 
 -- convierte un valor en el término equivalente
 quote :: Value -> Term
@@ -81,7 +85,11 @@ eval nvs (t1 :@: t2) =
        in eval nvs (sub 0 (quote v2) body)
     v1 -> case eval nvs t2 of
             v2 -> error ("No se puede aplicar el valor " ++ show v1 ++ " a " ++ show v2)
-eval nvs (Let t1 t2) = eval nvs (sub 0 t1 t2)
+eval nvs (Let t1 t2) =
+  -- evaluate the bound expression first, then substitute its value (quoted)
+  -- into the body, consistent with application semantics used elsewhere
+  let v1 = eval nvs t1
+  in eval nvs (sub 0 (quote v1) t2)
 
 ----------------------
 --- type checker
@@ -129,4 +137,6 @@ infer' c e (t :@: u) = infer' c e t >>= \tt -> infer' c e u >>= \tu ->
     FunT t1 t2 -> if (tu == t1) then ret t2 else matchError t1 tu
     _          -> notfunError tt
 infer' c e (Lam t u) = infer' (t : c) e u >>= \tu -> ret $ FunT t tu
+infer' c e (Let t1 t2) =
+  infer' c e t1 >>= \t1t -> infer' (t1t : c) e t2
 
