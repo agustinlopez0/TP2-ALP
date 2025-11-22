@@ -28,7 +28,8 @@ import Data.Char
     ZERO    { TZero }
     IN      { TIn }
     VAR     { TVar $$ }
-    TYPEE   { TTypeE }
+        TYPEE   { TTypeE }
+        NAT     { TNat }
     DEF     { TDef }
     
 
@@ -47,7 +48,7 @@ Exp     :: { LamTerm }
         | LET VAR '=' Exp IN Exp       { LLet $2 $4 $6 }
         | ZERO                         { LZero }
         | SUC Exp                      { LSuc $2 }
-        | R Exp Exp Exp                { LR $2 $3 $4 }  
+        | R Exp Exp Exp                { LRec $2 $3 $4 }  
         | NAbs                         { $1 }
         
 NAbs    :: { LamTerm }

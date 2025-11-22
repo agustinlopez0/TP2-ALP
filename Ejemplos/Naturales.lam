@@ -1,0 +1,5 @@
+def zero = 0
+
+def one = suc zero
+
+def two = suc one
