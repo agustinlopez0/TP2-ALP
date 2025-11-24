@@ -1,0 +1,12 @@
+def nilv = nil
+
+def one = suc 0
+
+def two = suc one
+
+def mylist = cons two (cons one (cons 0 nil))
+
+-- suma de una lista de naturales usando RL: RL t1 t2 t3
+-- t1 : Nat (valor base), t2 : Nat -> List Nat -> Nat -> Nat
+-- aquí t2 ignora el head y la tail y acumula en acc: suc acc
+def sumList = RL 0 (\n:Nat. \lv:List Nat. \acc:Nat. suc acc) mylist

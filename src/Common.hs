@@ -37,6 +37,7 @@ module Common where
                 -- listas
                 |  LNil
                 |  LCons LamTerm LamTerm
+                |  LRecList LamTerm LamTerm LamTerm
                 deriving (Show, Eq)
 
 
@@ -54,14 +55,14 @@ module Common where
              -- listas
              | Nil
              | Cons Term Term
+             | RecList Term Term Term
           deriving (Show, Eq)
 
   -- Valores
-  data Value = VLam Type Term 
+  data Value = VLam Type Term
              -- Sección 8
              | VNum NumVal
              | VList ListVal
-             
            deriving (Show, Eq)
 
   -- Valores Numericos

@@ -26,10 +26,14 @@ import Data.Char
     SUC     { TSuc }
     R       { TR }
     ZERO    { TZero }
+    LIST    { TList }
+    CONS    { TCons }
+    NIL     { TNil }
+    RL      { TRL }
     IN      { TIn }
     VAR     { TVar $$ }
-        TYPEE   { TTypeE }
-        NAT     { TNat }
+    TYPEE   { TTypeE }
+    NAT     { TNat }
     DEF     { TDef }
     
 
@@ -41,28 +45,39 @@ import Data.Char
 
 Def     :  Defexp                      { $1 }
         |  Exp	                       { Eval $1 }
-Defexp  : DEF VAR '=' Exp              { Def $2 $4 } 
+Defexp  : DEF VAR '=' Exp              { Def $2 $4 }
 
 Exp     :: { LamTerm }
         : '\\' VAR ':' Type '.' Exp    { LAbs $2 $4 $6 }
         | LET VAR '=' Exp IN Exp       { LLet $2 $4 $6 }
-        | ZERO                         { LZero }
-        | SUC Exp                      { LSuc $2 }
-        | R Exp Exp Exp                { LRec $2 $3 $4 }  
-        | NAbs                         { $1 }
-        
+        | App                          { $1 }
+
+App    :: { LamTerm }
+        : App Atom                       { LApp $1 $2 }
+        | Prefix                         { $1 }
+
+Prefix  :: { LamTerm }
+        : SUC Atom                          { LSuc $2 }
+        | CONS Atom Atom                    { LCons $2 $3 }
+        | R Atom Atom Atom                  { LRec  $2 $3 $4 }
+        | RL Atom Atom Atom                 { LRecList $2 $3 $4 }
+        | Atom                              { $1 }
+
 NAbs    :: { LamTerm }
         : NAbs Atom                    { LApp $1 $2 }
         | Atom                         { $1 }
 
 Atom    :: { LamTerm }
-        : VAR                          { LVar $1 }  
-        | '(' Exp ')'                  { $2 }
+        : VAR                                { LVar $1 }
+        | ZERO                               { LZero }
+        | NIL                                { LNil }
+        | '(' Exp ')'                        { $2 }
 
 Type    : TYPEE                        { EmptyT }
         | Type '->' Type               { FunT $1 $3 }
         | '(' Type ')'                 { $2 }
         | NAT                          { NatT }
+        | LIST NAT                     { ListT }
 
 Defs    : Defexp Defs                  { $1 : $2 }
         |                              { [] }
@@ -113,6 +128,10 @@ data Token = TVar String
                | TZero
                | TR
                | TNat
+               | TList
+               | TCons
+               | TNil
+               | TRL
                deriving Show
 
 ----------------------------------
@@ -125,12 +144,11 @@ lexer cont s = case s of
                     ('-':('-':cs)) -> lexer cont $ dropWhile ((/=) '\n') cs
                     ('{':('-':cs)) -> consumirBK 0 0 cont cs	
                     ('-':('}':cs)) -> \ line -> Failed $ "Línea "++(show line)++": Comentario no abierto"
+                    ('0':cs) -> cont TZero cs
                     ('-':('>':cs)) -> cont TArrow cs
                     ('\\':cs)-> cont TAbs cs
                     ('.':cs) -> cont TDot cs
                     ('(':cs) -> cont TOpen cs
-                    ('0':cs) -> cont TZero cs
-                    ('-':('>':cs)) -> cont TArrow cs
                     (')':cs) -> cont TClose cs
                     (':':cs) -> cont TColon cs
                     ('=':cs) -> cont TEquals cs
@@ -141,6 +159,10 @@ lexer cont s = case s of
                               ("def",rest)  -> cont TDef rest
                               ("let", rest) -> cont TLet rest
                               ("in", rest)  -> cont TIn rest
+                              ("nil", rest) -> cont TNil rest
+                              ("cons", rest)-> cont TCons rest
+                              ("List",rest) -> cont TList rest
+                              ("RL", rest)  -> cont TRL rest
                               ("suc", rest) -> cont TSuc rest
                               ("R", rest)   -> cont TR rest
                               ("Nat", rest) -> cont TNat rest

@@ -34,9 +34,12 @@ conv (LVar v) st       = case search v st of
 conv (LAbs v t lt) st  = Lam t (conv lt (addVar v (plus1 st)))
 conv (LApp lt1 lt2) st = (conv lt1 st) :@: (conv lt2 st)
 conv (LLet v t1 t2) st = Let (conv t1 st) (conv t2 (addVar v (plus1 st)))
-conv (LZero) st = Zero
+conv LZero st = Zero
 conv (LSuc lt) st = Suc (conv lt st)
 conv (LRec t1 t2 t3) st = Rec (conv t1 st) (conv t2 st) (conv t3 st)
+conv LNil st = Nil
+conv (LCons t1 t2) st = Cons (conv t1 st) (conv t2 st)
+conv (LRecList t1 t2 t3) st = RecList (conv t1 st) (conv t2 st) (conv t3 st) 
 
 search s [] = Nothing
 search s ((s',i):xs) = if (s == s') then Just i else search s xs
@@ -62,10 +65,30 @@ sub _ _ (Free n   )           = Free n
 sub i t (u   :@: v)           = sub i t u :@: sub i t v
 sub i t (Lam t'  u)           = Lam t' (sub (i + 1) t u)
 sub i t (Let t1 t2)           = Let (sub i t t1) (sub (i+1) t t2)
+sub _ _ Zero                  = Zero
+sub i t (Suc t1)              = Suc (sub i t t1)
+sub i t (Rec t1 t2 t3)        = Rec (sub i t t1) (sub i t t2) (sub i t t3)
+sub _ _ Nil                   = Nil
+sub i t (Cons t1 t2)          = Cons (sub i t t1) (sub i t t2)
+sub i t (RecList t1 t2 t3)    = RecList (sub i t t1) (sub i t t2) (sub i t t3)
 
 -- convierte un valor en el término equivalente
 quote :: Value -> Term
 quote (VLam t f) = Lam t f
+quote (VNum n) = case n of
+                  NZero -> Zero
+                  NSuc n' -> Suc (quote (VNum n'))
+quote (VList l) = case l of
+                   VNil -> Nil 
+                   VCons nv l' -> Cons (quote (VNum nv)) (quote (VList l'))
+
+isValue :: Term -> Bool
+isValue Nil          = True
+isValue (Lam _ _)    = True
+isValue Zero         = True
+isValue (Suc t)      = isValue t
+isValue (Cons t1 t2) = isValue t1 && isValue t2
+isValue _            = False
 
 -- evalúa un término en un entorno dado
 -- type NameEnv v t = [(Name, (v, t))]
@@ -97,6 +120,21 @@ eval env (Rec t1 t2 (Suc t)) = eval env (t2 :@: (Rec t1 t2 t) :@: t)
 eval env (Rec t1 t2 t3) =
   let v3 = eval env t3
   in eval env (Rec t1 t2 (quote v3))
+eval env Nil = VList VNil
+eval env (Cons t1 t2) =
+  case eval env t1 of
+    VNum n1 ->
+      case eval env t2 of
+        VList l2 -> VList (VCons n1 l2)
+        _        -> error "La lista solo puede contener naturales (tail no es lista)"
+    _ -> error "La lista solo puede contener naturales (head no es número)"
+                          
+eval env (RecList t1 t2 Nil) = eval env t1
+eval env (RecList t1 t2 (Cons n lv)) = eval env (t2 :@: n :@: lv :@: (RecList t1 t2 lv))
+eval env (RecList t1 t2 t3) =
+  let v3 = eval env t3
+  in eval env (RecList t1 t2 (quote v3))
+
 
 ----------------------
 --- type checker
@@ -162,7 +200,18 @@ infer' c e (Rec t1 t2 t3) = infer' c e t1 >>= \tt
                             -> infer' c e t2 >>= \tu 
                             -> infer' c e t3 >>= \tv 
                             ->
-                                if (tu == (FunT (FunT tt NatT) tt)) && (tv == NatT)
+                                if (tu == FunT tt (FunT NatT tt)) && (tv == NatT)
                                   then ret tt
                                   else recTypeError tt tu tv
-                                                      
+infer' c e Nil = ret ListT
+infer' c e (Cons t1 t2) = infer' c e t1 >>= \tt
+                          -> infer' c e t2 >>= \tu
+                          -> if (tt == NatT && tu == ListT)
+                              then ret ListT
+                              else notfunError tt
+infer' c e (RecList t1 t2 t3) = infer' c e t1 >>= \tt 
+                            -> infer' c e t2 >>= \tu 
+                            -> infer' c e t3 >>= \tv 
+                            -> if (tu == (FunT NatT (FunT ListT (FunT tt tt))) && tv == ListT)
+                                  then ret tt
+                                  else notfunError tt

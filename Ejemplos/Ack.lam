@@ -1,1 +1,18 @@
-\x:Nat . \y:Nat .   
+def pred = \r:Nat.R 0 (\n: Nat.\m:Nat . n) r
+def tres = suc (suc (suc 0))
+def cuatro = suc tres
+
+
+def ack =
+  \m:Nat.
+    R
+      (\n:Nat. suc n)
+      ( \ackm:Nat->Nat. \mminus:Nat.
+          \n:Nat.
+            R
+              (ackm (suc 0))
+              (\ackmn:Nat.\nminus:Nat. ackm ackmn)
+              n
+      )
+      m
+

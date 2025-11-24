@@ -55,6 +55,19 @@ pp ii vs (Rec t1 t2 t3) =
     <> pp ii vs t2
     <> text " "
     <> pp ii vs t3
+pp ii vs (Nil) = text "nil"
+pp ii vs (Cons t1 t2) = 
+  text "cons "
+    <> pp ii vs t1
+    <> text " "
+    <> pp ii vs t2
+pp ii vs (RecList t1 t2 t3) = 
+  text "RL "
+    <> pp ii vs t1
+    <> text " "
+    <> pp ii vs t2
+    <> text " "
+    <> pp ii vs t3
 
 isLam :: Term -> Bool
 isLam (Lam _ _) = True
@@ -69,6 +82,8 @@ printType :: Type -> Doc
 printType EmptyT = text "E"
 printType (FunT t1 t2) =
   sep [parensIf (isFun t1) (printType t1), text "->", printType t2]
+printType NatT = text "Nat" 
+printType ListT = text "List Nat"
 
 
 isFun :: Type -> Bool
@@ -84,6 +99,9 @@ fv (Let t1 t2) = fv t1 ++ fv t2
 fv Zero = []
 fv (Suc t) = fv t
 fv (Rec t1 t2 t3) = fv t1 ++ fv t2 ++ fv t3
+fv Nil = []
+fv (Cons t1 t2) = fv t1 ++ fv t2
+fv (RecList t1 t2 t3) = fv t1 ++ fv t2 ++ fv t3
 
 ---
 printTerm :: Term -> Doc
