@@ -1,0 +1,57 @@
+
+def sumPos = let x = 0 in \xs: List Nat .
+RL 
+    nil
+
+    (
+        \n: Nat.
+        \m: List Nat.
+        \o: List Nat.
+        let x = suc x in
+        cons (suma n x) o
+    )
+
+    xs
+
+    n = length
+    [n..1]
+    [1..n]
+    !!
+    [3, 6, 78, 8]
+
+
+def suma = \n: Nat. \m: Nat . R n (\r:Nat.\p:Nat.suc r) m
+def pred = \r:Nat.R 0 (\n: Nat.\m:Nat . n) r
+def tres = suc (suc (suc 0))
+def cuatro = suc tres
+def length = \xs:List Nat . 
+RL 0 ( \n:Nat. \l:List Nat. \r:Nat. suc r) xs
+
+def listn = \n:Nat .
+R 
+    nil
+    (
+        \l:List Nat.
+        \m:Nat.
+        cons (suc m) l
+    )
+    n
+
+def resta = \n: Nat. \m: Nat . 
+R 
+    n 
+    (
+        \x:Nat.
+        \y:Nat.
+        pred x
+    ) 
+    m
+    
+
+
+
+
+
+
+
+

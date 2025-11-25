@@ -1,0 +1,13 @@
+def suma = \n: Nat. \m: Nat . R n (\r:Nat.\p:Nat.suc r) m
+
+def sumPosAux =
+  \xs:List Nat.
+  \i:Nat.
+    RL
+      nil
+      (\n:Nat. \rest:List Nat. \rec:List Nat.
+          cons (suma n (suc i)) (sumPosAux rest (suc i))
+      )
+      xs
+
+def sumPos = \xs:List Nat. sumPosAux xs 0

@@ -1,0 +1,42 @@
+def suma = \n: Nat. \m: Nat . R n (\r:Nat.\p:Nat.suc r) m
+def pred = \r:Nat.R 0 (\n: Nat.\m:Nat . m) r
+
+def length = \xs:List Nat . 
+RL 0 ( \n:Nat. \l:List Nat. \r:Nat. suc r) xs
+
+def listn = \n:Nat .
+R 
+    nil
+    (
+        \l:List Nat.
+        \m:Nat.
+        cons (suc m) l
+    )
+    n
+
+def resta = \n: Nat. \m: Nat . R n ( \x:Nat. \y:Nat. pred x) m
+    
+def index =
+  \l:List Nat.
+  \i:Nat.
+    RL
+      0
+      ( \n:Nat. \rest:List Nat. \rec:Nat.
+          R n (\predi:Nat. \dummy:Nat. rec) i
+      )
+      l
+
+def sumPos = \l:List Nat .
+RL
+    nil
+
+    (
+        \n:Nat.
+        \xs:List Nat.
+        \rec: Nat.
+        let i = (resta (length l) n) in
+        let v = (index l i) in
+        cons (suma v i) xs
+    )
+    
+    (listn (length l))

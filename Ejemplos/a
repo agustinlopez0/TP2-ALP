@@ -1,0 +1,90 @@
+R                           R
+  (\n:Nat. suc n)           t1
+  ( \ackm:Nat->Nat.         t2
+    \foo:Nat.
+    \n:Nat.
+      R
+        (ackm (suc 0))
+        ( 
+          \ackmn:Nat.
+          \foo:Nat. 
+          ackm ackmn
+        )
+        n
+  )
+  (suc (suc 0))              Suc t
+
+=> 
+  ( \ackm:Nat->Nat.  
+    \foo:Nat.
+    \n:Nat.
+      R
+        (ackm (suc 0))
+        ( 
+          \ackmn:Nat.
+          \foo:Nat. 
+          ackm ackmn
+        )
+        n
+  )
+  R
+    (\n:Nat. suc n)
+    ( \ackm:Nat->Nat.  
+        \foo:Nat.
+        \n:Nat.
+        R
+            (ackm (suc 0))
+            ( 
+            \ackmn:Nat.
+            \foo:Nat. 
+            ackm ackmn
+            )
+            n
+    )
+    suc 0
+
+  suc 0
+
+=>
+  ( \ackm:Nat->Nat.  
+    \foo:Nat.
+    \n:Nat.
+      R
+        (ackm (suc 0))
+        ( 
+          \ackmn:Nat.
+          \foo:Nat. 
+          ackm ackmn
+        )
+        n
+  )
+    ( \ackm:Nat->Nat.  
+        \foo:Nat.
+        \n:Nat.
+        R
+            (ackm (suc 0))
+            ( 
+            \ackmn:Nat.
+            \foo:Nat. 
+            ackm ackmn
+            )
+            n
+    )
+    R
+        (\n:Nat. suc n)
+        ( \ackm:Nat->Nat.  
+            \foo:Nat.
+            \n:Nat.
+            R
+                (ackm (suc 0))
+                ( 
+                \ackmn:Nat.
+                \foo:Nat. 
+                ackm ackmn
+                )
+                n
+        )
+        0
+    0
+
+  suc 0

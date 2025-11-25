@@ -178,6 +178,18 @@ recTypeError t1 t2 t3 =
         ++ render (printType t2) ++ " (t2), "
         ++ render (printType t3) ++ " (t3)"
 
+consTypeError :: Type -> Type -> Either String Type
+consTypeError t1 t2 =
+  err $ "Error de tipos en Cons: se esperaba Nat y List Nat, pero se obtuvo "
+        ++ render (printType t1) ++ " y " ++ render (printType t2)
+
+recListTypeError :: Type -> Type -> Type -> Either String Type
+recListTypeError t1 t2 t3 =
+  err $ "Error de tipos en RecList: " 
+        ++ render (printType t1) ++ " (t1), "
+        ++ render (printType t2) ++ " (t2), "
+        ++ render (printType t3) ++ " (t3)"
+
 -- infiere el tipo de un término a partir de un entorno local de variables y un entorno global
 infer' :: Context -> NameEnv Value Type -> Term -> Either String Type
 infer' c _ (Bound i) = ret (c !! i)
@@ -208,10 +220,10 @@ infer' c e (Cons t1 t2) = infer' c e t1 >>= \tt
                           -> infer' c e t2 >>= \tu
                           -> if (tt == NatT && tu == ListT)
                               then ret ListT
-                              else notfunError tt
+                              else consTypeError tt tu
 infer' c e (RecList t1 t2 t3) = infer' c e t1 >>= \tt 
                             -> infer' c e t2 >>= \tu 
                             -> infer' c e t3 >>= \tv 
                             -> if (tu == (FunT NatT (FunT ListT (FunT tt tt))) && tv == ListT)
                                   then ret tt
-                                  else notfunError tt
+                                  else recListTypeError tt tu tv

@@ -1,18 +1,25 @@
 def pred = \r:Nat.R 0 (\n: Nat.\m:Nat . n) r
-def tres = suc (suc (suc 0))
+def uno = suc 0
+def dos = suc uno
+def tres = suc dos
 def cuatro = suc tres
+def cinco = suc cuatro
 
 
-def ack =
-  \m:Nat.
+def ack = \m:Nat.
     R
-      (\n:Nat. suc n)
-      ( \ackm:Nat->Nat. \mminus:Nat.
-          \n:Nat.
-            R
-              (ackm (suc 0))
-              (\ackmn:Nat.\nminus:Nat. ackm ackmn)
-              n
+      (\n:Nat. suc n) 
+      ( \ackm:Nat->Nat.
+        \foo:Nat.
+        \n:Nat.
+          R
+            (ackm (suc 0))
+            ( 
+              \ackmn:Nat.
+              \foo:Nat.
+              ackm ackmn
+            )
+            n
       )
-      m
+      m 
 
