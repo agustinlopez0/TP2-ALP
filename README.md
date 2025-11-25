@@ -1,64 +1,226 @@
-# TP 2 - ALP - 2024
+# Intérprete de Lambda Cálculo Simplemente Tipado
 
-Hola! Este README es un documento complementario al PDF de la consigna del TP. Para este trabajo no van a necesitar nada nuevo, solamente se repiten las intrucciones básicas de `stack`. Si hicieron el TP1, lo único que les va a ser útil  es la sección **Estructura del código**.
+[![Haskell](https://img.shields.io/badge/language-Haskell-purple.svg)](https://www.haskell.org/)
+[![Stack](https://img.shields.io/badge/build-Stack-blue.svg)](https://docs.haskellstack.org/)
+[![License](https://img.shields.io/badge/license-BSD3-green.svg)](LICENSE)
 
-### Stack
-Para este TP vamos a usar [**Stack**](https://docs.haskellstack.org/), una herramienta sencilla para desarrollar poryectos en Haskell. Stack tiene muchas utilidades, pero ahora nos vamos a concentrar sus funciones básicas.
+Un intérprete completo e interactivo de **Lambda Cálculo Simplemente Tipado (STLC)** implementado en Haskell, con extensiones para números naturales, listas y expresiones `let`.
 
-Antes que nada, puede que tengas que instalarlo. En [1](https://docs.haskellstack.org/en/stable/README/#how-to-install) hay guías de instalación para distintas plataformas.
+## 📋 Características
 
-Stack se encarga de instalar la versión correcta de GHC, instalar los paquetes necesarios y compilar el proyecto. Para las primeras dos, basta con abrir una terminal en el directorio `TP2` y ejecutar:
+- ✅ **Evaluador call-by-value** con sustitución correcta
+- ✅ **Inferidor de tipos** con verificación estática
+- ✅ **Parser** usando Happy con soporte para comentarios anidados
+- ✅ **Pretty Printer** para visualización de términos y tipos
+- ✅ **Intérprete interactivo** con REPL completo
+- ✅ **Extensiones del lenguaje**:
+  - Números naturales con recursión primitiva (`R`)
+  - Listas de naturales con recursión (`RL`)
+  - Expresiones `let` para definiciones locales
+
+## 🚀 Instalación
+
+### Requisitos
+
+- [Stack](https://docs.haskellstack.org/) (herramienta de build para Haskell)
+- GHC 8.8.3 (se instala automáticamente con Stack)
+
+### Pasos de instalación
+
+1. Clona el repositorio:
+```bash
+git clone <url-del-repositorio>
+cd TP2-ALP
 ```
+
+2. Configura Stack (solo la primera vez):
+```bash
 stack setup
 ```
-Esto puede demorar un rato porque se encarga de descargar e instalar la verisón correcta de GHC. Este comando solo se debería tener que ejecutar una única vez. Al terminar esto, está todo listo para compilar el proyecto, que se hace con:
-```
+
+3. Compila el proyecto:
+```bash
 stack build
 ```
-Este es el comando que van a tener que usar para compilar el proyecto cada vez que lo modifiquen.
 
-### Estructura del código
-La estructura del proyecto es la siguiente:
-```
-.
-|-- app
-|    |-- Main.hs
-|---src
-|   |-- Common.hs
-|   |-- Simplytyped.hs
-|   |-- PrettyPrinter.hs
-|   |-- Parse.y
-|-- Ejemplos
-|     |-- Prelude.lam
-|-- test
-|-- README.md
-|-- Setup.hs
-|-- TP2.cabal
-|-- package.yaml
-|-- stack.yaml
-|-- stack.yaml.lock
-```
-**IMPORTANTE:** Solo deberían tener que modificar archivos de los directorios `src` y `Ejemplos`.
+## 💻 Uso
 
-* En el directorio `app` se define el módulo `Main`, que implementa el ejecutable final. 
+### Ejecutar el intérprete interactivo
 
-* En el directorio `src` se encuentran los módulos sobre los que van a trabajar:
-  - `Common` define los tipos de términos y valores en la consigna junto a algunos tipos auxiliares. **Los tipos definidos en este archivo ya cuentan con todas las extensiones planteadas en el TP, por lo que no deberían tener que modificarlo.**
-  - `PrettyPrinter` tiene el Pretty Printer del lenguaje, **parcialmente implementado**. 
-  - `Parse.y` define el parser, que está **parcialmente implementado**. Para ello, este archivo especifica la gramática en BNF y provee el lexer. El módulo `Parse.hs` es generado por la herramienta `Happy` (explicada en la Sección 3 de la consigna) al hacer `stack build`, y se guarda en un directorio oculto.
-  - `Simplytyped` tiene las funciones que hacen funcionar al intérprete y el inferidor de tipos, ambos **parcialmente implementados**.
-
-* En el directorio `Ejemplos` está el preludio, con algunos términos del lambda cálculo simplemente tipado (STLC). En este directorio van a resolver los ejercicios 5 y 7.
-
-* El resto de los archivos son de configuración del proyecto.
-
-**IMPORTANTE:** Por favor, no cambiar los nombres de los módulos, tipos, constructores, funciones, etc. Ante cualquier duda consulte a su docente de cabecera.
-
-### ¿Cómo ejecutarlo?
-
-Una vez compilado el proyecto, se puede correr el ejecutable definido en `app/Main.hs` haciendo:
-```
-stack exec TP2-exe 
+```bash
+stack exec TP2-exe
 ```
 
-Esto lanzará el evaluador interactivo de lambda cálculo simplemente tipado a implementar en este trabajo. Con el comando `:?` pueden leer sobre el resto de los comandos disponibles.
+Esto iniciará el REPL donde puedes escribir expresiones y comandos.
+
+### Cargar archivos de ejemplo
+
+```bash
+stack exec TP2-exe -- Ejemplos/Naturales.lam Ejemplos/Listas.lam
+```
+
+### Comandos disponibles
+
+Una vez en el intérprete, puedes usar los siguientes comandos:
+
+| Comando | Descripción |
+|---------|-------------|
+| `:?` o `:help` | Mostrar ayuda |
+| `:type <expresión>` | Inferir el tipo de una expresión |
+| `:print <expresión>` | Mostrar el AST de una expresión |
+| `:browse` | Listar todas las definiciones en scope |
+| `:load <archivo>` | Cargar un archivo |
+| `:reload` | Recargar el último archivo |
+| `:quit` | Salir del intérprete |
+| `def <nombre> = <expresión>` | Definir una variable |
+| `<expresión>` | Evaluar una expresión |
+
+## 📚 Ejemplos
+
+### Lambda cálculo básico
+
+```haskell
+-- Identidad
+def I = \x:E. x
+
+-- Constante
+def K = \x:E.\y:E.x
+
+-- Combinador S
+def S = \x:E->E->E.\y:E->E.\z:E.(x z) (y z)
+```
+
+### Números naturales
+
+```haskell
+def zero = 0
+def one = suc zero
+def two = suc one
+
+-- Predecesor usando recursión primitiva
+def pred = \r:Nat.R 0 (\n:Nat.\m:Nat.n) r
+```
+
+### Listas
+
+```haskell
+def mylist = cons two (cons one (cons 0 nil))
+
+-- Suma de una lista
+def sumList = RL 0 (\n:Nat. \lv:List Nat. \acc:Nat. suc acc) mylist
+```
+
+### Expresiones let
+
+```haskell
+let x = 0 in suc x
+```
+
+## 🏗️ Estructura del Proyecto
+
+```
+TP2-ALP/
+├── app/
+│   └── Main.hs              # Punto de entrada y REPL interactivo
+├── src/
+│   ├── Common.hs            # Tipos de datos base (Term, Type, Value)
+│   ├── Simplytyped.hs       # Evaluador e inferidor de tipos
+│   ├── PrettyPrinter.hs     # Formateo de términos y tipos
+│   └── Parse.y              # Gramática del parser (Happy)
+├── Ejemplos/
+│   ├── Prelude.lam          # Definiciones básicas
+│   ├── Naturales.lam       # Ejemplos con números naturales
+│   ├── Listas.lam           # Ejemplos con listas
+│   ├── Ej7.lam              # Ejercicio 7
+│   └── Ack.lam              # Función de Ackermann
+├── stack.yaml               # Configuración de Stack
+└── package.yaml             # Configuración del paquete
+```
+
+## 🔧 Componentes Principales
+
+### Evaluador (`Simplytyped.hs`)
+
+Implementa evaluación call-by-value con:
+- Sustitución correcta usando índices de De Bruijn
+- Evaluación de funciones, aplicaciones y expresiones `let`
+- Recursión primitiva para naturales (`R`)
+- Recursión para listas (`RL`)
+
+### Inferidor de Tipos (`Simplytyped.hs`)
+
+Sistema de tipos con:
+- Inferencia de tipos para todos los constructores
+- Verificación de tipos de funciones
+- Mensajes de error descriptivos
+- Soporte para tipos base (`E`, `Nat`, `List Nat`) y funciones
+
+### Parser (`Parse.y`)
+
+Gramática BNF implementada con Happy:
+- Lexer con soporte para comentarios anidados `{- -}`
+- Precedencia correcta de operadores
+- Parsing de tipos y términos
+
+### Pretty Printer (`PrettyPrinter.hs`)
+
+Formateo inteligente de:
+- Términos con nombres de variables frescos
+- Tipos con paréntesis según necesidad
+- Expresiones complejas con indentación
+
+## 📖 Sintaxis del Lenguaje
+
+### Tipos
+
+```
+Type ::= E                    -- Tipo vacío
+      | Nat                   -- Números naturales
+      | List Nat              -- Listas de naturales
+      | Type -> Type          -- Funciones
+      | (Type)                -- Paréntesis
+```
+
+### Términos
+
+```
+Term ::= VAR                  -- Variable
+      | \VAR:Type.Term        -- Abstracción lambda
+      | Term Term             -- Aplicación
+      | let VAR = Term in Term -- Expresión let
+      | 0                     -- Cero
+      | suc Term              -- Sucesor
+      | R Term Term Term      -- Recursión primitiva
+      | nil                   -- Lista vacía
+      | cons Term Term        -- Constructor de lista
+      | RL Term Term Term     -- Recursión sobre listas
+      | (Term)                -- Paréntesis
+```
+
+## 🧪 Testing
+
+Ejecuta los tests incluidos:
+
+```bash
+cd Ejemplos
+./run_tests.sh
+```
+
+## 📝 Licencia
+
+Este proyecto está bajo la licencia BSD3. Ver el archivo [LICENSE](LICENSE) para más detalles.
+
+## 👥 Autor
+
+Trabajo Práctico 2 - Análisis de Lenguajes de Programación (ALP)
+
+## 🙏 Agradecimientos
+
+- Implementado usando [Stack](https://docs.haskellstack.org/)
+- Parser generado con [Happy](https://www.haskell.org/happy/)
+- Pretty printing con [pretty](https://hackage.haskell.org/package/pretty)
+
+---
+
+⭐ Si este proyecto te resultó útil, considera darle una estrella en GitHub.
+
